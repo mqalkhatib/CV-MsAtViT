@@ -1,0 +1,12 @@
+ENVI
+description = {
+PolSARpro File Imported to ENVI }
+samples = 1024
+lines   = 750
+max val = 1.000000
+min val = 0.000000
+color   = 8 bytes
+sensor type = NONE
+map info = {UTM,1,1,0.0,0.0,1.0,1.0,30,North}
+band names = {
+D:/OneDrive - University of Dubai/Research/SAR Classification/Datasets/Flevoland/T3/mask_valid_pixels.bmp.hdr }
