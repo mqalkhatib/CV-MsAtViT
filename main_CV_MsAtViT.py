@@ -1,19 +1,47 @@
 import scipy.io as sio
 import numpy as np
 from SAR_utils import *
-
-#from tensorflow import keras
-from sklearn.metrics import confusion_matrix, accuracy_score, classification_report, cohen_kappa_score
+from sklearn.metrics import confusion_matrix, accuracy_score, cohen_kappa_score
 from Load_Data import load_data
-
-#from tensorflow.keras.utils import plot_model
 from cvnn.layers import complex_input, ComplexConv2D, ComplexConv3D, ComplexDense, ComplexDropout, ComplexFlatten
 from tensorflow.keras import layers
 from tensorflow.keras.optimizers import Adam
 from net_flops import net_flops
-
 from CoordAttention import CoordAtt_cmplx
 
+def predict_by_batching(model, input_tensor, batch_size):
+    '''
+    Function to to perform predictions by dividing large tensor into small ones 
+    to reduce load on GPU
+    
+    Parameters
+    ----------
+    model: The model itself with pre-trained weights.
+    input_tensor: Tensor of diemnsion batches x windowSize x windowSize x channels x 1.
+    batch_size: integer value smaller than batches .
+
+    Returns
+    -------
+    Predicetd labels
+    '''
+    
+    num_samples = input_tensor.shape[0]
+    k = 0
+    predictions = []
+    for i in range(0, num_samples, batch_size):
+        print("batch", k, " out of", num_samples//batch_size)
+        print(k*batch_size, "out of", num_samples )
+        k+=1
+        batch = input_tensor[i:i + batch_size]
+        batch_predictions = model.predict(batch, verbose=1)
+        predictions.append(batch_predictions)
+        
+    Y_pred_test = np.concatenate(predictions, axis=0)
+  
+    return Y_pred_test
+          
+        
+        
 # Get the data
 dataset = 'FL_T'
 windowSize = 15
@@ -162,7 +190,7 @@ def cmplx_ViT(x):
     
     return features
 
-def MyModel(img_list, num_class):
+def MsAtViT(img_list, num_class):
     inputs = complex_input(shape=img_list.shape[1:])
     
     x = MultiScaleFeatureExtractor(inputs)
@@ -188,10 +216,11 @@ def MyModel(img_list, num_class):
     return model
 
 """## Compile, Train, and Evaluate the model"""
-model = MyModel(X_train, num_classes(dataset))
+model = MsAtViT(X_train, num_classes(dataset))
 model.summary()
 
 net_flops(model)
+
 # Perform Training
 from tensorflow.keras.callbacks import EarlyStopping
 early_stopper = EarlyStopping(monitor='accuracy', 
@@ -199,7 +228,7 @@ early_stopper = EarlyStopping(monitor='accuracy',
                               restore_best_weights=True
                               )
 
-model = MyModel(X_train, num_classes(dataset))
+#model = MsAtViT(X_train, num_classes(dataset))
     
 history = model.fit(X_train, y_train,
                             batch_size = 128, 
@@ -210,7 +239,7 @@ history = model.fit(X_train, y_train,
     
 
 
-Y_pred_test = model.predict([X_test])
+Y_pred_test = predict_by_batching(model, X_test, X_test.shape[0]//16)
 y_pred_test = np.argmax(Y_pred_test, axis=1)
        
     
@@ -236,7 +265,7 @@ del X_train, X_test
 X_coh, y = createImageCubes(data, gt, windowSize, removeZeroLabels = False)
 X_coh = np.expand_dims(X_coh, axis=4)
 
-Y_pred_test = model.predict(X_coh)
+Y_pred_test = predict_by_batching(model, X_coh, X_coh.shape[0]//16)
 y_pred_test = (np.argmax(Y_pred_test, axis=1)).astype(np.uint8)
 
 Y_pred = np.reshape(y_pred_test, gt.shape) + 1
