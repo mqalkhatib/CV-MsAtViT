@@ -23,3 +23,14 @@ To quantitatively measure the proposed CV-MsAtViT model, three evaluation metric
 ![image](https://github.com/user-attachments/assets/78321e6e-4f29-4121-914a-c0503bdf281f)
 
 # Citation
+@article{ALKHATIB2025104412,
+title = {PolSAR image classification using complex-valued multiscale attention vision transformer (CV-MsAtViT)},
+journal = {International Journal of Applied Earth Observation and Geoinformation},
+volume = {137},
+pages = {104412},
+year = {2025},
+issn = {1569-8432},
+doi = {https://doi.org/10.1016/j.jag.2025.104412},
+url = {https://www.sciencedirect.com/science/article/pii/S1569843225000597},
+author = {Mohammed Q. Alkhatib},
+}
