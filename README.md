@@ -34,3 +34,5 @@ doi = {https://doi.org/10.1016/j.jag.2025.104412},
 url = {https://www.sciencedirect.com/science/article/pii/S1569843225000597},
 author = {Mohammed Q. Alkhatib},
 }
+
+Feel free to contact me on: mqalkhatib@ieee.org
